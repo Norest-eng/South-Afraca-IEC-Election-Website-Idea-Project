@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IEC South Africa - National, Provincial & Ward Election Portal</title>
+
+<!-- Bootstrap 5 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Bootstrap Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+<!-- Google Maps JavaScript API -->
+<script src="https://maps.googleapis.com/maps/api/js?v=weekly"></script>
+
+<style>
+:root {
+    --sa-black: #000000;
+    --sa-gold: #E5A93B;
+    --sa-green: #007A4D;
+    --sa-red: #DE3831;
+    --sa-blue: #002395;
+    --card-radius: 16px;
+    --transition-speed: 0.25s;
+}
+
+body {
+    background-color: #f3f5f8;
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(222, 56, 49, 0.05) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(0, 35, 149, 0.05) 0px, transparent 50%),
+        radial-gradient(at 50% 50%, rgba(0, 122, 77, 0.04) 0px, transparent 50%);
+    background-attachment: fixed;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Accessibility Modes */
+body.accessibility-large-text { font-size: 1.25rem; }
+body.accessibility-large-text .form-control,
+body.accessibility-large-text .form-select,
+body.accessibility-large-text .btn { font-size: 1.3rem; }
+
+body.accessibility-high-contrast { background: #000000 !important; color: #ffffff !important; }
+body.accessibility-high-contrast .card { background: #121212 !important; border: 2px solid #ffffff !important; color: #ffffff !important; }
+body.accessibility-high-contrast .bg-light,
+body.accessibility-high-contrast .ballot-row { background: #222222 !important; color: #ffffff !important; border-color: #ffffff !important; }
+
+.header {
+    background: #ffffff;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    border-bottom: 4px solid var(--sa-green);
+}
+
+.header-logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1440px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.flag-badge { font-size: 2.5rem; }
+
+.iec-logo-mock {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 900;
+    font-size: 1.4rem;
+}
+.iec-logo-box {
+    width: 36px;
+    height: 36px;
+    background: var(--sa-black);
+    color: var(--sa-gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 1.2rem;
+}
+
+.card {
+    border: none;
+    border-radius: var(--card-radius);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+    margin-bottom: 24px;
+    background: #ffffff;
+}
+
+.ballot-row { 
+    transition: all var(--transition-speed); 
+    border: 1px solid #e5e7eb;
+    min-height: 85px;
+}
+.ballot-row:hover {
+    background-color: rgba(0, 122, 77, 0.02);
+    border-color: var(--sa-green);
+}
+
+.form-check-input {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+}
+
+.party-tag {
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 6px;
+    color: #fff;
+    min-width: 95px;
+    text-align: center;
+    font-size: 0.85rem;
+}
+
+.candidate-avatar {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e5e7eb;
+    background-color: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.candidate-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.camera-box {
+    position: relative;
+    width: 100%;
+    margin: 0 auto;
+    background: #111827;
+    border-radius: 12px;
+    overflow: hidden;
+    aspect-ratio: 4/3;
+    border: 2px dashed #9ca3af;
+}
+
+.scanning-overlay {
+    position: absolute;
+    top: 10%; left: 10%; right: 10%; bottom: 10%;
+    border: 2px solid var(--sa-gold);
+    border-radius: 8px;
+    pointer-events: none;
+    box-shadow: 0 0 0 999px rgba(0, 0, 0, 0.5);
+}
+
+.selfie-overlay {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60%; height: 75%;
+    border: 2px dashed var(--sa-blue);
+    border-radius: 50%;
+    pointer-events: none;
+    box-shadow: 0 0 0 999px rgba(0, 0, 0, 0.5);
+}
+
+#map-container {
+    width: 100%;
+    height: 250px;
+    border-radius: 12px;
+    background: #e5e7eb;
+}
+
+.server-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    background-color: #22c55e;
+    animation: pulse-green 2s infinite;
+}
+
+@keyframes pulse-green {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+.timer-badge {
+    font-size: 0.85rem;
+    font-family: monospace;
+}
+
+.feature-disabled-mask {
+    opacity: 0.4;
+    pointer-events: none !important;
+    user-select: none;
+}
+
+/* Styled Histogram Metrics Component */
+.histogram-bar-container {
+    background: #e9ecef;
+    border-radius: 8px;
+    overflow: hidden;
+    height: 24px;
+    width: 100%;
+}
+.histogram-bar-fill {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: bold;
+    transition: width 0.6s ease;
+}
+
+@media (max-width: 576px) {
+    .header-logo-container { flex-direction: column; gap: 15px; text-align: center; }
+    .ballot-row { flex-direction: column; align-items: start !important; gap: 12px; padding: 15px !important; }
+    .ballot-row .d-flex { width: 100%; justify-content: space-between; }
+    body.accessibility-large-text { font-size: 1.1rem; }
+}
+</style>
+</head>
+<body onmousemove="resetInactivityTimer()" onkeypress="resetInactivityTimer()" onclick="resetInactivityTimer()">
+
+<!-- Accessibility Control Panel -->
+<div class="bg-dark text-white px-3 py-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <span class="small text-warning"><i class="bi bi-universal-access me-2"></i>WCAG 2.2 Assistive Panel</span>
+    <div class="d-flex gap-2">
+        <button class="btn btn-sm btn-outline-light" onclick="toggleContrast()"><i class="bi bi-circle-half"></i> Contrast</button>
+        <button class="btn btn-sm btn-outline-light" onclick="toggleTextSize()"><i class="bi bi-type"></i> Zoom</button>
+    </div>
+</div>
+
+<header class="header">
+    <div class="header-logo-container">
+        <div class="flag-badge" role="img" aria-label="South African Flag">🇿🇦</div>
+        <div class="text-center">
+            <h1 class="h3 fw-bold mb-1" id="portalTitle">National Election Operational Portal</h1>
+            <p class="text-muted small mb-0 fw-semibold">Independent Electoral Commission Automated System Desk</p>
+        </div>
+        <div class="iec-logo-mock">
+            <div class="iec-logo-box">X</div>
+            <span class="d-none d-sm-inline">IEC</span>
+        </div>
+    </div>
+</header>
+
+<main class="container-fluid px-3 px-md-4 mt-4">
+    
+    <!-- SERVER CONNECTIVITY TRACKER LAYER -->
+    <div class="card p-3 border-start border-warning border-4 mb-3">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div class="fw-bold text-dark"><i class="bi bi-server me-2 text-primary"></i>Paramount Infrastructure Server Sync Status:</div>
+            <div class="d-flex gap-4 flex-wrap">
+                <div class="small d-flex align-items-center gap-2">
+                    <span class="server-dot" id="srv-core"></span>
+                    <span>IEC Central Core: <strong class="text-success" id="srv-core-txt">Connected (4ms)</strong></span>
+                </div>
+                <div class="small d-flex align-items-center gap-2">
+                    <span class="server-dot" id="srv-prov"></span>
+                    <span>Provincial Data Nodes: <strong class="text-success" id="srv-prov-txt">Connected (8ms)</strong></span>
+                </div>
+                <div class="small d-flex align-items-center gap-2">
+                    <span class="server-dot" id="srv-local"></span>
+                    <span>Local Sync Ring: <strong class="text-success" id="srv-local-txt">Connected (12ms)</strong></span>
+                </div>
+                <div class="small d-flex align-items-center gap-2 border-start ps-3 border-secondary-subtle">
+                    <span class="server-dot bg-info" id="srv-cmd-center"></span>
+                    <span>Command Center Network Device Hook: <strong class="text-info" id="srv-cmd-txt">Linked (Secure)</strong></span>
+                </div>
+            </div>
+            <button class="btn btn-sm btn-outline-secondary fw-bold" onclick="simulateServerPing()"><i class="bi bi-arrow-clockwise me-1"></i>Test Latency</button>
+        </div>
+    </div>
+
+    <!-- NEW HISTOGRAPHY / REAL-TIME TALLY VISUALIZATION LAYER -->
+    <div class="card p-4 border-start border-info border-4 mb-3">
+        <div class="row align-items-center">
+            <div class="col-md-4 mb-3 mb-md-0">
+                <h5 class="fw-bold text-dark mb-1"><i class="bi bi-bar-chart-line-fill me-2 text-info"></i>Live Vote Tally Histography</h5>
+                <p class="text-muted small mb-0">Visual summary breakdown of audited records streamed per primary stakeholder platform.</p>
+            </div>
+            <div class="col-md-8">
+                <div class="row g-2">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between small fw-bold mb-1"><span>African National Congress (ANC)</span><span>42%</span></div>
+                        <div class="histogram-bar-container"><div class="histogram-bar-fill" style="width: 42%; background-color: var(--sa-green);">42% Allocated</div></div>
+                    </div>
+                    <div class="col-12 mt-2">
+                        <div class="d-flex justify-content-between small fw-bold mb-1"><span>Democratic Alliance (DA)</span><span>24%</span></div>
+                        <div class="histogram-bar-container"><div class="histogram-bar-fill" style="width: 24%; background-color: var(--sa-blue);">24% Allocated</div></div>
+                    </div>
+                    <div class="col-12 mt-2">
+                        <div class="d-flex justify-content-between small fw-bold mb-1"><span>Economic Freedom Fighters (EFF)</span><span>15%</span></div>
+                        <div class="histogram-bar-container"><div class="histogram-bar-fill" style="width: 15%; background-color: var(--sa-red);">15% Allocated</div></div>
+                    </div>
+                    <div class="col-12 mt-2">
+                        <div class="d-flex justify-content-between small fw-bold mb-1"><span>uMkhonto weSizwe Party (MK)</span><span>12%</span></div>
+                        <div class="histogram-bar-container"><div class="histogram-bar-fill" style="width: 12%; background-color: var(--sa-gold); color: black;">12% Allocated</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- GEOLOCATION & GEOGRAPHIC SEGMENTATION -->
+    <div class="card p-3 border-start border-primary border-4 mb-4">
+        <div class="row g-3">
+            <div class="col-lg-6">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <label class="form-label fw-bold text-primary mb-0"><i class="bi bi-globe-africa me-2"></i>1. Province Context Selection:</label>
+                    <div class="form-check form-switch bg-light px-3 py-1 rounded border">
+                        <input class="form-check-input" type="checkbox" id="coastingSwitch" onchange="toggleCoastingMode()">
+                        <label class="form-check-label small fw-bold text-danger ms-2" for="coastingSwitch">Voter is Coasting (Section 24A)</label>
+                    </div>
+                </div>
+                <select class="form-select form-select-lg fw-bold mb-3" id="provinceDropdown" onchange="handleProvinceChange()">
+                    <option value="fs" selected>Free State</option>
+                    <option value="gp">Gauteng</option>
+                    <option value="wc">Western Cape</option>
+                    <option value="kzn">KwaZulu-Natal</option>
+                    <option value="ec">Eastern Cape</option>
+                    <option value="lp">Limpopo</option>
+                    <option value="mp">Mpumalanga</option>
+                    <option value="nw">North West</option>
+                    <option value="nc">Northern Cape</option>
+                </select>
+
+                <!-- Dynamic Cascading Jurisdiction Vectors -->
+                <div id="hierarchy-wrapper">
+                    <div class="row g-2 mb-2">
+                        <div class="col-sm-6">
+                            <label class="form-label small fw-bold text-secondary">2. District / Metro Municipality</label>
+                            <select class="form-select form-select-sm fw-semibold" id="districtDropdown" onchange="handleDistrictChange()">
+                                <option>Mangaung Metropolitan Municipality</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label small fw-bold text-secondary">3. Local Municipality Division</label>
+                            <select class="form-select form-select-sm fw-semibold" id="municipalityDropdown" onchange="handleMunicipalityChange()">
+                                <option>Mangaung Local Division</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-sm-6">
+                            <label class="form-label small fw-bold text-secondary">4. Target Town / Suburb Area</label>
+                            <select class="form-select form-select-sm fw-semibold" id="townDropdown">
+                                <option>Central Urban Core Cluster</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="form-label small fw-bold text-secondary">5. Electoral Voting Ward Context</label>
+                            <select class="form-select form-select-sm fw-semibold text-danger" id="wardDropdown" onchange="renderBallotOptions()">
+                                <option>Ward 12 (Operational Hub Zone)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="alert alert-warning mt-3 mb-0 py-2 d-none" id="coastingAlert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i><strong>Coasting Protocol Active:</strong> Voter is handling ballots outside registered division. Local Ward Ballot Option Restricted.
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <label class="form-label fw-bold text-primary mb-0"><i class="bi bi-map-fill me-1"></i> Google Maps Live Verification Terminal</label>
+                    <button type="button" class="btn btn-primary btn-sm fw-bold shadow-sm" onclick="geolocateVoter()">
+                        <i class="bi bi-geo-alt-fill me-1"></i>Auto-Detect Location
+                    </button>
+                </div>
+                <div id="map-container"></div>
+                <div id="location-lock-feedback" class="small text-muted mt-1 fw-semibold text-end">Map ready to load location framework...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- LEFT: Biometric Validation Panel -->
+        <div class="col-lg-5 mb-4">
+            <div class="card mb-0 shadow-sm">
+                <div class="card-header bg-secondary text-white fw-bold"><i class="bi bi-fingerprint me-2"></i>Voter Verification & Roll Status</div>
+                <div class="card-body p-3 p-md-4">
+                    <form onsubmit="alert('Parameters verified successfully.'); return false;">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">13-Digit South African ID Number</label>
+                            <input type="text" id="voterIdNumber" class="form-control form-control-lg" placeholder="e.g. 9505125000084" maxlength="13" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold d-flex justify-content-between">
+                                <span><i class="bi bi-camera-fill me-1"></i>6. Scan South African ID Card</span>
+                                <span class="badge bg-warning text-dark">Optical Alignment</span>
+                            </label>
+                            <div class="camera-box mb-2" id="idScanBox">
+                                <video id="idVideoStream" style="width:100%; height:100%; object-fit:cover;" autoplay playsinline></video>
+                                <div class="scanning-overlay" id="idScanOverlay"></div>
+                                <div class="position-absolute bottom-0 start-0 w-100 p-2 text-center text-white bg-dark bg-opacity-75 small">Document hardware layer inactive.</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold d-flex justify-content-between">
+                                <span><i class="bi bi-person-bounding-box me-1"></i>7. Biometric Selfie check</span>
+                                <span class="badge bg-success"><i class="bi bi-shield-check"></i> Live Check</span>
+                            </label>
+                            <div class="camera-box mb-2" id="selfieBox">
+                                <video id="selfieVideoStream" style="width:100%; height:100%; object-fit:cover;" autoplay playsinline></video>
+                                <div class="selfie-overlay" id="selfieOverlay"></div>
+                                <div class="position-absolute bottom-0 start-0 w-100 p-2 text-center text-white bg-dark bg-opacity-75 small">Biometric face capture layout inactive.</div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-secondary w-100 fw-bold py-2 mt-2">Verify Voter Parameters</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: Dynamic Interactive Ballot Engine & Candidates List -->
+        <div class="col-lg-7 mb-4">
+            <div class="card border-start border-success border-4 mb-4 shadow-sm">
+                <div class="card-header bg-success text-white fw-bold d-flex justify-content-between align-items-center">
+                    <span id="ballotHeader">National Assembly Ballot System</span>
+                    <span class="badge bg-white text-success" id="activeWardIndicator">Ward Context Active</span>
+                </div>
+                <div class="card-body p-3 p-md-4">
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-success" id="configSelectorLabel"><i class="bi bi-layers-half me-2"></i>Select Target Ballot Configuration Type:</label>
+                        <div class="btn-group w-100" role="group">
+                            <input type="radio" class="btn-check" name="ballotType" id="typeNational" checked onclick="renderBallotOptions()">
+                            <label class="btn btn-outline-success fw-bold p-2 small text-wrap" for="typeNational">1. National Compensatory</label>
+                            
+                            <input type="radio" class="btn-check" name="ballotType" id="typeRegional" onclick="renderBallotOptions()">
+                            <label class="btn btn-outline-success fw-bold p-2 small text-wrap" for="typeRegional">2. Regional National</label>
+                            
+                            <input type="radio" class="btn-check" name="ballotType" id="typeProvincial" onclick="renderBallotOptions()">
+                            <label class="btn btn-outline-success fw-bold p-2 small text-wrap" for="typeProvincial">3. Provincial Assembly</label>
+                            
+                            <input type="radio" class="btn-check" name="ballotType" id="typeWard" onclick="renderBallotOptions()">
+                            <label class="btn btn-outline-success fw-bold p-2 small text-wrap" for="typeWard">4. Local Ward Candidate</label>
+                        </div>
+                    </div>
+
+                    <!-- EXPANDED BALLOT OPTIONS CONTAINER -->
+                    <div id="dynamicBallotBox" class="mb-3 d-flex flex-column gap-3">
+                         <!-- Dynamically populated by JS render function -->
+                    </div>
+
+                    <form onsubmit="alert('Vote parsed and securely recorded.'); return false;">
+                        <button class="btn btn-success w-100 fw-bold mt-4 py-3 shadow-sm"><i class="bi bi-box-seam-fill me-2"></i>Submit Cryptographic Vote</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- MULTI-PARTY MFA ENFORCEMENT -->
+            <div class="card border-start border-danger border-4 mb-4 shadow-sm">
+                <div class="card-header bg-danger text-white fw-bold d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-shield-lock-fill me-2"></i>Legacy Ballot Box Stream</span>
+                    <div class="d-flex align-items-center gap-2">
+                        <span id="sessionTimerDisplay" class="badge bg-dark text-warning border border-warning timer-badge d-none">Session: 03:00</span>
+                        <span id="mfaBadgeStatus" class="badge bg-dark text-danger border border-danger small px-2 py-1">Locked</span>
+                    </div>
+                </div>
+                <div class="card-body p-3">
+                    <div class="alert alert-info py-2 px-3 small mb-3 border-start border-info border-3">
+                        <div class="fw-bold mb-1"><i class="bi bi-info-circle-fill me-1"></i>Instruction: Live Result Entry Tally Ledger</div>
+                        Select a candidate configuration to cross-authenticate regional ledger sync metrics.
+                    </div>
+
+                    <form id="secureLegacyForm" onsubmit="alert('Stream committed.'); return false;">
+                        <div id="legacyFormFieldsWrapper" class="feature-disabled-mask">
+                            <div class="row g-2 mb-3">
+                                <div class="col-sm-6">
+                                    <label class="form-label small fw-bold text-dark">Candidate Allocation</label>
+                                    <select class="form-select form-select-sm fw-semibold" id="legacyPartySelect" required>
+                                        <option value="ANC">ANC - National List</option>
+                                        <option value="DA">DA - National List</option>
+                                        <option value="EFF">EFF - Regional List</option>
+                                        <option value="MK">MK - Provincial List</option>
+                                        <option value="IND">Ward Independent Candidate</option>
+                                    </select>
+                                </div>
+                                <div class="col-sm-6">
+                                    <label class="form-label small fw-bold text-dark">Verified Audited Count</label>
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text"><i class="bi bi-hash"></i></span>
+                                        <input type="number" id="legacyVoteCount" class="form-control fw-semibold" placeholder="Total tally sheets value" min="1">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- MFA Identification Validation Layers Box -->
+                        <div class="border rounded p-3 bg-light mb-3 border-secondary-subtle">
+                            <div class="small fw-bold text-danger mb-2 border-bottom pb-1 d-flex justify-content-between">
+                                <span><i class="bi bi-key-fill me-1"></i>Required Concurrent Authentication Factors:</span>
+                                <span class="text-muted text-uppercase font-monospace" style="font-size:0.75rem;">Multi-Party Rules</span>
+                            </div>
+                            
+                            <div class="mb-2">
+                                <label class="form-label text-muted small fw-bold mb-1">1. Personnel Alpha (Recorder Passphrase Clearance)</label>
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text"><i class="bi bi-person-fill-lock"></i></span>
+                                    <input type="password" id="mfaAdminPassphrase" class="form-control" placeholder="Enter administrative alphanumeric code" autocomplete="current-password">
+                                </div>
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label text-muted small fw-bold mb-1">2. Personnel Beta (Auditor Hardware Security Key Check)</label>
+                                <div class="d-flex gap-2">
+                                    <div class="input-group input-group-sm flex-grow-1">
+                                         <span class="input-group-text"><i class="bi bi-usb-plug-fill"></i></span>
+                                         <input type="text" class="form-control" placeholder="Awaiting Multi-party token deployment..." disabled>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Unified Script Controller Section -->
+<script>
+// Master Data Store Object mapping realistic South African Candidates and dynamic Unsplash headshots
+const ballotDatabase = {
+    national: [
+        { name: "Matamela Cyril Ramaphosa", role: "National Assembly List Head", party: "ANC", color: "var(--sa-green)", img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120&h=120", id: "nat_1" },
+        { name: "John Henry Steenhuisen", role: "National Assembly List Head", party: "DA", color: "var(--sa-blue)", img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=120&h=120", id: "nat_2" },
+        { name: "Julius Sello Malema", role: "National Assembly List Head", party: "EFF", color: "var(--sa-red)", img: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&q=80&w=120&h=120", id: "nat_3" },
+        { name: "Jacob Gedleyihlekisa Zuma", role: "National Assembly List Head", party: "MK Party", color: "var(--sa-gold)", textColor: "black", img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=120&h=120", id: "nat_4" }
+    ],
+    regional: [
+        { name: "Paul Mashatile", role: "Regional Legislative Lead", party: "ANC", color: "var(--sa-green)", img: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=120&h=120", id: "reg_1" },
+        { name: "Solly Malatsi", role: "Regional Legislative Lead", party: "DA", color: "var(--sa-blue)", img: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&q=80&w=120&h=120", id: "reg_2" },
+        { name: "Marshall Dlamini", role: "Regional Legislative Lead", party: "EFF", color: "var(--sa-red)", img: "https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?auto=format&fit=crop&q=80&w=120&h=120", id: "reg_3" },
+        { name: "Duduzile Zuma-Sambudla", role: "Regional Legislative Lead", party: "MK Party", color: "var(--sa-gold)", textColor: "black", img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=120&h=120", id: "reg_4" }
+    ],
+    provincial: [
+        { name: "Panyaza Lesufi", role: "Provincial Premier Candidate", party: "ANC", color: "var(--sa-green)", img: "https://images.unsplash.com/photo-1489980508314-941910ded1f4?auto=format&fit=crop&q=80&w=120&h=120", id: "prov_1" },
+        { name: "Solly Msimanga", role: "Provincial Premier Candidate", party: "DA", color: "var(--sa-blue)", img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=120&h=120", id: "prov_2" },
+        { name: "Nkululeko Dunga", role: "Provincial Premier Candidate", party: "EFF", color: "var(--sa-red)", img: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=120&h=120", id: "prov_3" }
+    ],
+    ward: [
+        { name: "Thaba Lerato Mooko", role: "Independent Representative", party: "IND", color: "#f8f9fa", textColor: "black", isInd: true, img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=120&h=120", id: "ward_1" },
+        { name: "Selloane Motloung", role: "Ward 12 Community Leader", party: "ANC", color: "var(--sa-green)", img: "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?auto=format&fit=crop&q=80&w=120&h=120", id: "ward_2" },
+        { name: "Werner Pretorius", role: "Ward 12 Local Organizer", party: "DA", color: "var(--sa-blue)", img: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=120&h=120", id: "ward_3" }
+    ]
+};
+
+function renderBallotOptions() {
+    const ballotBox = document.getElementById('dynamicBallotBox');
+    const ballotHeader = document.getElementById('ballotHeader');
+    
+    // Evaluate checked state criteria
+    let selectedType = 'national';
+    if (document.getElementById('typeRegional').checked) {
+        selectedType = 'regional';
+        ballotHeader.innerText = "Regional National Ballot System";
+    } else if (document.getElementById('typeProvincial').checked) {
+        selectedType = 'provincial';
+        ballotHeader.innerText = "Provincial Assembly Ballot System";
+    } else if (document.getElementById('typeWard').checked) {
+        selectedType = 'ward';
+        ballotHeader.innerText = "Local Ward Candidate Ballot System";
+    } else {
+        ballotHeader.innerText = "National Compensatory Ballot System";
+    }
+
+    // Capture explicit data matrix allocation
+    const optionsList = ballotDatabase[selectedType];
+    
+    // Clean old elements
+    ballotBox.innerHTML = '';
+
+    // Re-render dataset row templates dynamically
+    optionsList.forEach(cand => {
+        const customBadgeStyle = cand.isInd 
+            ? `background-color: ${cand.color}; color: ${cand.textColor}; min-width: 95px;`
+            : `background-color: ${cand.color}; color: ${cand.textColor || '#fff'}; min-width: 95px;`;
+            
+        const computedTagClass = cand.isInd ? "party-tag text-dark border bg-light" : "party-tag";
+
+        const template = `
+            <div class="ballot-row p-3 rounded d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="candidate-avatar">
+                        <img src="${cand.img}" alt="${cand.name}">
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-dark mb-0">${cand.name}</h6>
+                        <small class="text-muted">${cand.role}</small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="${computedTagClass}" style="${customBadgeStyle}">${cand.party}</span>
+                    <input class="form-check-input border-secondary" type="radio" name="voterSelection" id="input_${cand.id}">
+                </div>
+            </div>
+        `;
+        ballotBox.insertAdjacentHTML('beforeend', template);
+    });
+}
+
+// Global window runtime initializer hook
+document.addEventListener("DOMContentLoaded", () => {
+    renderBallotOptions();
+});
+
+// Structural mock stubs preventing operational script crashes on empty triggers
+function resetInactivityTimer() {}
+function toggleContrast() { document.body.classList.toggle('accessibility-high-contrast'); }
+function toggleTextSize() { document.body.classList.toggle('accessibility-large-text'); }
+function simulateServerPing() {}
+function handleProvinceChange() {}
+function handleDistrictChange() {}
+function handleMunicipalityChange() {}
+function geolocateVoter() {}
+
+function toggleCoastingMode() {
+    const alertBox = document.getElementById('coastingAlert');
+    const wardRadio = document.getElementById('typeWard');
+    const wardLabel = document.querySelector('label[for="typeWard"]');
+    
+    if(document.getElementById('coastingSwitch').checked) {
+        alertBox.classList.remove('d-none');
+        wardRadio.disabled = true;
+        wardLabel.classList.add('opacity-50');
+        if(wardRadio.checked) {
+            document.getElementById('typeNational').checked = true;
+            renderBallotOptions();
+        }
+    } else {
+        alertBox.classList.add('d-none');
+        wardRadio.disabled = false;
+        wardLabel.classList.remove('opacity-50');
+    }
+}
+</script>
+</body>
+</html>

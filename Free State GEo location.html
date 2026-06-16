@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free State Provincial Election System</title>
+
+<!-- Bootstrap 5 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Bootstrap Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+<style>
+:root {
+    --sa-black: #000000;
+    --sa-gold: #E5A93B;
+    --sa-green: #007A4D;
+    --sa-red: #DE3831;
+    --sa-blue: #002395;
+    --card-radius: 16px;
+    --transition-speed: 0.25s;
+}
+
+body {
+    background-color: #f3f5f8;
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(222, 56, 49, 0.08) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(0, 35, 149, 0.08) 0px, transparent 50%),
+        radial-gradient(at 50% 50%, rgba(0, 122, 77, 0.06) 0px, transparent 50%),
+        radial-gradient(at 0% 100%, rgba(229, 169, 59, 0.08) 0px, transparent 50%);
+    background-attachment: fixed;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    transition: font-size var(--transition-speed), line-height var(--transition-speed);
+}
+
+/* High Contrast & Accessibility Utility Variables */
+body.accessibility-large-text {
+    font-size: 1.2rem;
+}
+body.accessibility-large-text .form-control,
+body.accessibility-large-text .form-select,
+body.accessibility-large-text .btn {
+    font-size: 1.25rem;
+}
+body.accessibility-high-contrast {
+    background: #000000 !important;
+    color: #ffffff !important;
+}
+body.accessibility-high-contrast .card {
+    background: #121212 !important;
+    border: 2px solid #ffffff !important;
+    color: #ffffff !important;
+}
+body.accessibility-high-contrast .card-header,
+body.accessibility-high-contrast .bg-light,
+body.accessibility-high-contrast .service-link-item {
+    background: #222222 !important;
+    color: #ffffff !important;
+}
+body.accessibility-high-contrast a {
+    color: #00ff00 !important;
+}
+
+/* Premium Modern Header Styling */
+.header {
+    background: #ffffff;
+    color: #111827;
+    padding: 35px 24px;
+    position: relative;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+
+.header-logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.flag-badge {
+    font-size: 2.8rem;
+    line-height: 1;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+}
+
+.iec-logo-mock {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 900;
+    font-size: 1.6rem;
+    letter-spacing: -1px;
+    color: var(--sa-black);
+}
+.iec-logo-box {
+    width: 34px;
+    height: 34px;
+    background: var(--sa-red);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    font-weight: 800;
+}
+
+.header-text-group h1 {
+    font-size: 1.75rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: #111827;
+    margin-bottom: 4px;
+}
+
+.accessibility-bar {
+    background: #111827;
+    color: #ffffff;
+    padding: 10px 20px;
+}
+
+.card {
+    border: none;
+    border-radius: var(--card-radius);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+    margin-top: 24px;
+    overflow: hidden;
+    background: #ffffff;
+    transition: transform 0.2s ease;
+}
+
+.card-header {
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.ballot-row {
+    transition: all var(--transition-speed);
+    border: 2px solid transparent !important;
+}
+.ballot-row:hover {
+    background-color: rgba(0, 122, 77, 0.03) !important;
+    border-color: rgba(0, 122, 77, 0.15) !important;
+}
+
+.party-tag {
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 8px;
+    color: #fff;
+    min-width: 90px;
+    text-align: center;
+    font-size: 0.85rem;
+}
+
+.candidate-photo-frame {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #e5e7eb;
+}
+
+.service-link-item {
+    padding: 16px 20px;
+    border-bottom: 1px solid #f3f4f6;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: background 0.2s;
+}
+.service-link-item:hover {
+    background-color: #f9fafb;
+}
+
+/* Hardware Interface Scanning Windows */
+.camera-view-window {
+    width: 100%;
+    height: 240px;
+    background: #111827;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    border: 2px dashed var(--sa-gold);
+}
+.camera-view-window video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.camera-overlay-grid {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    border: 25px solid rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+.id-bounding-box {
+    width: 90%;
+    height: 80%;
+    border: 2px solid var(--sa-green);
+    box-shadow: 0 0 15px rgba(0, 122, 77, 0.5);
+    position: relative;
+}
+.selfie-bounding-box {
+    width: 170px;
+    height: 170px;
+    border: 2px dashed var(--sa-blue);
+    border-radius: 50%;
+    box-shadow: 0 0 15px rgba(0, 35, 149, 0.5);
+}
+
+/* Map Mock Canvas styling */
+#mapDisplayCanvas {
+    width: 100%;
+    height: 320px;
+    background-color: #e5e9f0;
+    border: 1px solid #ced4da;
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+}
+
+footer {
+    background: #111827;
+    color: #9ca3af;
+    padding: 40px 20px;
+    margin-top: 50px;
+    border-top: 4px solid var(--sa-green);
+}
+</style>
+</head>
+<body>
+
+<div class="accessibility-bar d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <div class="small fw-semibold text-warning-emphasis"><i class="bi bi-eye-fill me-2"></i>Accessibility Panel:</div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-sm btn-outline-light py-1" onclick="toggleContrast()" aria-label="Toggle High Contrast Mode"><i class="bi bi-circle-half me-1"></i> High Contrast</button>
+        <button class="btn btn-sm btn-outline-light py-1" onclick="toggleTextSize()" aria-label="Toggle Larger Text Size"><i class="bi bi-type me-1"></i> Zoom Text</button>
+    </div>
+</div>
+
+<header class="header">
+    <div class="header-logo-container">
+        <div class="flag-badge" role="img" aria-label="South African Flag">🇿🇦</div>
+        
+        <div class="header-text-group text-center">
+            <h1>Free State Provincial Election Portal</h1>
+            <p class="text-muted mb-0 fw-semibold">Official Operational Operational System</p>
+        </div>
+        
+        <div class="iec-logo-mock" aria-label="IEC Logo Container">
+            <div class="iec-logo-box">X</div>
+            <span>IEC</span>
+        </div>
+    </div>
+</header>
+
+<div class="bg-warning text-dark text-center py-2 fw-bold shadow-sm">
+    <i class="bi bi-telephone-fill me-2"></i> IEC Support: 0800 11 8000 | <i class="bi bi-whatsapp ms-3 me-2"></i> WhatsApp Help: 060 012 3456
+</div>
+
+<main class="container-fluid px-4 mt-2">
+    <div class="row">
+        
+        <!-- LEFT COLUMN: Identity Verification & Hardware Interfaces -->
+        <div class="col-xl-6 col-lg-6 mb-4">
+            
+            <!-- Biometric & Hardware Identity Verification Card -->
+            <div class="card border-start border-primary border-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <span>Voter Verification & Hardware Enrolment Terminal</span>
+                    <span class="badge bg-warning text-dark">POPIA Secured</span>
+                </div>
+                <div class="card-body p-4">
+                    <form onsubmit="handleVerificationSubmit(event);">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">13-Digit South African ID Number</label>
+                            <input type="text" id="voterIdNum" class="form-control form-control-lg" maxlength="13" placeholder="e.g. 9001015000081" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Full Identity Names</label>
+                            <input type="text" id="voterFullName" class="form-control form-control-lg" placeholder="As written on identity document" required>
+                        </div>
+
+                        <!-- Hardware Task 7: Identity Card Scanning Engine -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-primary"><i class="bi bi-camera-fill me-1"></i> Identity Card Document Scanner</label>
+                            <div class="camera-view-window mb-2">
+                                <video id="idScannerFeed" autoplay playsinline muted></video>
+                                <div class="camera-overlay-grid">
+                                    <div class="id-bounding-box"></div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-sm btn-outline-dark" onclick="startHardwareCamera('idScannerFeed')"><i class="bi bi-webcam"></i> Initialize Scanner</button>
+                                <button type="button" class="btn btn-sm btn-primary" onclick="captureMockTelemetry('Identity Card Scan successful')"><i class="bi bi-qr-code-scan"></i> Execute Card Optical Scan</button>
+                            </div>
+                        </div>
+
+                        <!-- Hardware Task 6: Selfie with ID Card Verification Engine -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold text-success"><i class="bi bi-person-bounding-box me-1"></i> Live Verification Portrait (Selfie with ID Card)</label>
+                            <div class="camera-view-window mb-2">
+                                <video id="selfieFeed" autoplay playsinline muted></video>
+                                <div class="camera-overlay-grid">
+                                    <div class="selfie-bounding-box"></div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-sm btn-outline-dark" onclick="startHardwareCamera('selfieFeed')"><i class="bi bi-webcam"></i> Initialize Camera</button>
+                                <button type="button" class="btn btn-sm btn-success" onclick="captureMockTelemetry('Selfie Portrait and ID match verified')"><i class="bi bi-person-check-fill"></i> Capture Match Biometrics</button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 fw-bold py-2 shadow-sm">Verify Complete Identity Data</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Hardware Task 1: Google Maps / Location Discovery Engine -->
+            <div class="card border-start border-warning border-4">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-geo-alt-fill text-warning me-2"></i>Geolocation Candidate Boundary Locator</span>
+                    <button class="btn btn-xs btn-outline-warning py-0 px-2" onclick="locateUserDevice()"><i class="bi bi-crosshair"></i> Auto Detect My Ward</button>
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted mb-2">Based on your structural geolocation matrix, the map below points directly to your current local operational polling boundary.</p>
+                    <div id="mapDisplayCanvas" class="d-flex flex-column justify-content-between p-3">
+                        <div class="bg-white p-2 rounded shadow-sm small border border-dark" style="z-index: 10; max-width: 280px;">
+                            <i class="bi bi-info-circle-fill text-primary"></i> <strong>Current Node:</strong> <span id="mapTrackingText">Frankfort Main Office</span><br>
+                            <span class="text-muted" id="mapCoordinatesText">Lat: -27.2801, Lon: 28.4972</span>
+                        </div>
+                        <div class="w-100 d-flex justify-content-center align-items-center flex-grow-1">
+                            <i class="bi bi-geo-alt-fill text-danger fs-1 animate-bounce" id="mapVisualMarker" style="transform: translateY(-20px);"></i>
+                        </div>
+                        <div class="w-100 bg-dark text-light p-1 text-center rounded small opacity-75">
+                            Interactive Location Map Provider Integration Context
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN: Geographic Hierarchies & Interactive Ballot -->
+        <div class="col-xl-6 col-lg-6 mb-4">
+            
+            <!-- Structural Tasks 2, 3, 4, 5: Administrative Boundary Selectors -->
+            <div class="card border-start border-success border-4">
+                <div class="card-header bg-success text-white">
+                    Regional Ballot Generation Engine
+                </div>
+                <div class="card-body p-4">
+                    <form onsubmit="handleBallotSubmission(event);">
+                        
+                        <div class="row g-3">
+                            <!-- Task 2: Districts in Free State -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-success"><i class="bi bi-map-fill me-1"></i> 1. Select District Council</label>
+                                <select class="form-select border-success fw-bold" id="districtDropdown" onchange="syncDistrictChange()">
+                                    <!-- Dynamic Population -->
+                                </select>
+                            </div>
+                            
+                            <!-- Task 3: Local Municipalities inside Districts -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-success"><i class="bi bi-building-fill me-1"></i> 2. Select Local Municipality</label>
+                                <select class="form-select border-success fw-bold" id="municipalityDropdown" onchange="syncMunicipalityChange()">
+                                    <!-- Dynamic Population -->
+                                </select>
+                            </div>
+
+                            <!-- Task 4: Towns within Municipalities -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-success"><i class="bi bi-geo-fill me-1"></i> 3. Select Town Center</label>
+                                <select class="form-select border-success fw-bold" id="townDropdown" onchange="syncTownChange()">
+                                    <!-- Dynamic Population -->
+                                </select>
+                            </div>
+
+                            <!-- Task 5: Wards in Towns -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold text-success"><i class="bi bi-signpost-split-fill me-1"></i> 4. Select Electoral Ward</label>
+                                <select class="form-select border-success fw-bold" id="wardDropdown" onchange="syncWardChange()">
+                                    <!-- Dynamic Population -->
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Local Ballot List Display -->
+                        <div class="mt-4">
+                            <label class="form-label fw-bold mb-2 fs-5" id="ballotHeaderTitle">5. Cast Digital Selection for Ward:</label>
+                            <div class="p-1 rounded" id="ballotBoxContainer">
+                                <!-- Generated dynamically via JavaScript mapping engine -->
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100 fw-bold mt-4 py-3 fs-5 shadow-sm">
+                            <i class="bi bi-box-seam-fill me-2"></i>Cast Cryptographic Ballot
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Statistical Live Distribution Diagram -->
+            <div class="card">
+                <div class="card-header bg-light text-dark fw-bold">
+                    Live Statistical Vote Summary (Free State Province)
+                </div>
+                <div class="card-body">
+                    <canvas id="voteChart"></canvas>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</main>
+
+<footer>
+    <div class="container text-center">
+        <p class="mb-2 fw-semibold">Electoral security environment utilizes verified auditing frameworks.</p>
+        <p class="text-muted small mb-0">&copy; 2026 Independent Electoral Commission (IEC) Systems Desk.</p>
+    </div>
+</footer>
+
+<!-- Chart.js CDN Module -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+// Deep Hierarchical Matrix Mapping of Free State Province Electoral Boundaries
+// Requirements Fulfilled: Districts -> Municipalities -> Towns -> Wards
+const freeStateElectoralDatabase = {
+    "Mangaung Metro": {
+        municipalities: {
+            "Mangaung Metropolitan Council": {
+                towns: {
+                    "Bloemfontein": ["Ward 1 (City Centre)", "Ward 2 (Brandwag)", "Ward 3 (Willows)", "Ward 4 (Ehrlichpark)"],
+                    "Botshabelo": ["Ward 27 (Section A)", "Ward 28 (Section B)", "Ward 29 (Section C)"],
+                    "Thaba Nchu": ["Ward 39 (Ratlou)", "Ward 40 (Selosesha)", "Ward 41 (Bultfontein)"],
+                    "Dewetsdorp": ["Ward 48 (Morojaneng)"],
+                    "Wepener": ["Ward 49 (Qibing)"]
+                }
+            }
+        },
+        candidates: [
+            { party: "ANC", name: "Sello Pietersen", color: "#006600" },
+            { party: "DA", name: "Werner Pretorius", color: "#00529B" },
+            { party: "MK", name: "Teboho Mokoena", color: "#1B4D3E" },
+            { party: "EFF", name: "Coach Liphoko", color: "#FF0000" }
+        ]
+    },
+    "Fezile Dabi District": {
+        municipalities: {
+            "Moqhaka Local Municipality": {
+                towns: {
+                    "Kroonstad": ["Ward 1 (Central)", "Ward 2 (Brentpark)", "Ward 3 (Maokeng)"],
+                    "Viljoenskroon": ["Ward 12 (Rammulotsi)"],
+                    "Steynsrus": ["Ward 15 (Matlwangtlwang)"]
+                }
+            },
+            "Ngwathe Local Municipality": {
+                towns: {
+                    "Parys": ["Ward 1 (Tumahole East)", "Ward 2 (Tumahole West)", "Ward 5 (Schonkenville)"],
+                    "Heilbron": ["Ward 6 (Phiritona)"],
+                    "Vredefort": ["Ward 8 (Mokwallo)"]
+                }
+            },
+            "Metsimaholo Local Municipality": {
+                towns: {
+                    "Sasolburg": ["Ward 1 (Zamdela)", "Ward 2 (Vaaldam)", "Ward 7 (Rosegarden)"],
+                    "Deneysville": ["Ward 9 (Refengkgotso)"]
+                }
+            },
+            "Mafube Local Municipality": {
+                towns: {
+                    "Frankfort": ["Ward 1 (Namahadi East)", "Ward 2 (Namahadi West)", "Ward 3 (Town Center)"],
+                    "Villiers": ["Ward 5 (Qalabotjha)"]
+                }
+            }
+        },
+        candidates: [
+            { party: "ANC", name: "Moeketsi Moshodi", color: "#006600" },
+            { party: "DA", name: "Carina Serfontein", color: "#00529B" },
+            { party: "FF+", name: "Jan van der Merwe", color: "#FF6600" },
+            { party: "EFF", name: "April Motaung", color: "#FF0000" }
+        ]
+    },
+    "Lejweleputswa District": {
+        municipalities: {
+            "Matjhabeng Local Municipality": {
+                towns: {
+                    "Welkom": ["Ward 1 (Riebeeckstad)", "Ward 4 (Thabong)", "Ward 9 (Naudeville)"],
+                    "Virginia": ["Ward 11 (Meloding)"],
+                    "Odendaalsrus": ["Ward 15 (Kutlwanong)"]
+                }
+            },
+            "Nala Local Municipality": {
+                towns: {
+                    "Bothaville": ["Ward 2 (Kgotsong)"],
+                    "Wesselsbron": ["Ward 5 (Monyakeng)"]
+                }
+            },
+            "Tokologo Local Municipality": {
+                towns: {
+                    "Boshof": ["Ward 1 (Seretse)"],
+                    "Dealesville": ["Ward 3 (Tshwaraganang)"]
+                }
+            }
+        },
+        candidates: [
+            { party: "ANC", name: "Nkosinathi Tseletsele", color: "#006600" },
+            { party: "DA", name: "Igor Scheurkogel", color: "#00529B" },
+            { party: "ActionSA", name: "Thandi Solani", color: "#00B050" },
+            { party: "EFF", name: "Neo Sesele", color: "#FF0000" }
+        ]
+    },
+    "Thabo Mofutsanyana District": {
+        municipalities: {
+            "Maluti-a-Phofung Local Municipality": {
+                towns: {
+                    "Phuthaditjhaba": ["Ward 1 (Setsing)", "Ward 5 (Bluegumbush)", "Ward 12 (Mandela Park)"],
+                    "Harrismith": ["Ward 22 (Intabazwe)"]
+                }
+            },
+            "Dihlabeng Local Municipality": {
+                towns: {
+                    "Bethlehem": ["Ward 3 (Bohlokong)", "Ward 7 (Morelig)"],
+                    "Ficksburg": ["Ward 10 (Meqheleng)"]
+                }
+            },
+            "Nketoana Local Municipality": {
+                towns: {
+                    "Reitz": ["Ward 2 (Petsana)"],
+                    "Arlington": ["Ward 5 (Lerangatleaneng)"]
+                }
+            }
+        },
+        candidates: [
+            { party: "ANC", name: "Masetjhaba Lakaje", color: "#006600" },
+            { party: "DA", name: "Dr. Leona Kleynhans", color: "#00529B" },
+            { party: "MK", name: "Kabelo Mahlangu", color: "#1B4D3E" },
+            { party: "IFP", name: "Thabani Buthelezi", color: "#B19134" }
+        ]
+    },
+    "Xhariep District": {
+        municipalities: {
+            "Kopanong Local Municipality": {
+                towns: {
+                    "Trompsburg": ["Ward 1 (Madikgetla)"],
+                    "Jagersfontein": ["Ward 3 (Itumeleng)"],
+                    "Philippolis": ["Ward 5 (Phelindaba)"]
+                }
+            },
+            "Letsemeng Local Municipality": {
+                towns: {
+                    "Koffiefontein": ["Ward 2 (Ditlhake)"],
+                    "Jacobsdal": ["Ward 4 (Ratanang)"]
+                }
+            },
+            "Mohokare Local Municipality": {
+                towns: {
+                    "Zastron": ["Ward 1 (Matlakeng)"],
+                    "Rouxville": ["Ward 3 (Roleleathunya)"]
+                }
+            }
+        },
+        candidates: [
+            { party: "ANC", name: "Xolile Matwa", color: "#006600" },
+            { party: "DA", name: "Gerda de Wet", color: "#00529B" },
+            { party: "ActionSA", name: "Zodwa Cele", color: "#00B050" },
+            { party: "EFF", name: "Thabo Mohapi", color: "#FF0000" }
+        ]
+    }
+};
+
+// Application Bootstrapping Configuration 
+document.addEventListener("DOMContentLoaded", function() {
+    initGeographicSelectors();
+    initVoteAnalyticsChart();
+});
+
+function toggleContrast() {
+    document.body.classList.toggle('accessibility-high-contrast');
+}
+
+function toggleTextSize() {
+    document.body.classList.toggle('accessibility-large-text');
+}
+
+// Cascading Hierarchical Structural Menus Initialization 
+function initGeographicSelectors() {
+    const districtSelect = document.getElementById("districtDropdown");
+    districtSelect.innerHTML = "";
+    
+    Object.keys(freeStateElectoralDatabase).forEach(district => {
+        let opt = document.createElement("option");
+        opt.value = district;
+        opt.textContent = district;
+        districtSelect.appendChild(opt);
+    });
+    
+    syncDistrictChange();
+}
+
+function syncDistrictChange() {
+    const districtKey = document.getElementById("districtDropdown").value;
+    const muniSelect = document.getElementById("municipalityDropdown");
+    muniSelect.innerHTML = "";
+    
+    const municipalMatrix = freeStateElectoralDatabase[districtKey].municipalities;
+    Object.keys(municipalMatrix).forEach(muni => {
+        let opt = document.createElement("option");
+        opt.value = muni;
+        opt.textContent = muni;
+        muniSelect.appendChild(opt);
+    });
+    
+    syncMunicipalityChange();
+}
+
+function syncMunicipalityChange() {
+    const districtKey = document.getElementById("districtDropdown").value;
+    const muniKey = document.getElementById("municipalityDropdown").value;
+    const townSelect = document.getElementById("townDropdown");
+    townSelect.innerHTML = "";
+    
+    const townMatrix = freeStateElectoralDatabase[districtKey].municipalities[muniKey].towns;
+    Object.keys(townMatrix).forEach(town => {
+        let opt = document.createElement("option");
+        opt.value = town;
+        opt.textContent = town;
+        townSelect.appendChild(opt);
+    });
+    
+    syncTownChange();
+}
+
+function syncTownChange() {
+    const districtKey = document.getElementById("districtDropdown").value;
+    const muniKey = document.getElementById("municipalityDropdown").value;
+    const townKey = document.getElementById("townDropdown").value;
+    const wardSelect = document.getElementById("wardDropdown");
+    wardSelect.innerHTML = "";
+    
+    const wardArray = freeStateElectoralDatabase[districtKey].municipalities[muniKey].towns[townKey];
+    wardArray.forEach(ward => {
+        let opt = document.createElement("option");
+        opt.value = ward;
+        opt.textContent = ward;
+        wardSelect.appendChild(opt);
+    });
+    
+    syncWardChange();
+}
+
+function syncWardChange() {
+    const districtKey = document.getElementById("districtDropdown").value;
+    const wardKey = document.getElementById("wardDropdown").value;
+    
+    document.getElementById("ballotHeaderTitle").innerHTML = `<i class="bi bi-card-list"></i> 5. Cast Digital Selection for ${wardKey}:`;
+    
+    renderCandidates(districtKey);
+    updateMockMapCoordinates(districtKey);
+}
+
+function renderCandidates(districtKey) {
+    const container = document.getElementById("ballotBoxContainer");
+    const candidateList = freeStateElectoralDatabase[districtKey].candidates;
+    container.innerHTML = "";
+
+    candidateList.forEach((candidate, index) => {
+        const checkState = index === 0 ? "checked" : "";
+        container.innerHTML += `
+            <div class="ballot-row d-flex align-items-center justify-content-between bg-white p-3 my-2 border rounded shadow-sm">
+                <div class="d-flex align-items-center gap-3">
+                    <input class="form-check-input style-radio-input" type="radio" name="ballotVote" id="cnd_${candidate.party}" value="${candidate.party}" ${checkState} style="transform: scale(1.3); margin-right: 8px;">
+                    <div class="party-tag" style="background-color: ${candidate.color};">
+                        ${candidate.party}
+                    </div>
+                    <div class="candidate-photo-frame d-none d-sm-flex">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="#9ca3af" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h6 class="mb-0 fw-bold text-dark">${candidate.name}</h6>
+                        <small class="text-muted">Registered Representative</small>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+}
+
+// Hardware Task 1: Location Discovery Logic
+function locateUserDevice() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const lat = position.coords.latitude.toFixed(4);
+                const lon = position.coords.longitude.toFixed(4);
+                document.getElementById("mapTrackingText").textContent = "Detected Device Location Node";
+                document.getElementById("mapCoordinatesText").textContent = `Lat: ${lat}, Lon: ${lon}`;
+                alert(`Device location discovered! Geolocation lat/lon bindings updated successfully.`);
+            },
+            () => {
+                alert("Location permission restricted. Simulating localization via infrastructure gateway instead.");
+            }
+        );
+    } else {
+        alert("Geolocation engine not supported by device hardware environment.");
+    }
+}
+
+function updateMockMapCoordinates(district) {
+    const coordDisplay = document.getElementById("mapCoordinatesText");
+    const nameDisplay = document.getElementById("mapTrackingText");
+    
+    const coordinatesMap = {
+        "Mangaung Metro": { coords: "Lat: -29.1181, Lon: 26.2232", place: "Bloemfontein HQ Hub" },
+        "Fezile Dabi District": { coords: "Lat: -26.8222, Lon: 27.8261", place: "Sasolburg Operations Centre" },
+        "Lejweleputswa District": { coords: "Lat: -27.9833, Lon: 26.7333", place: "Welkom Central Command" },
+        "Thabo Mofutsanyana District": { coords: "Lat: -28.2333, Lon: 28.3000", place: "Bethlehem Multi-Station Node" },
+        "Xhariep District": { coords: "Lat: -30.0667, Lon: 25.7000", place: "Trompsburg Border Station" }
+    };
+    
+    if(coordinatesMap[district]) {
+        coordDisplay.textContent = coordinatesMap[district].coords;
+        nameDisplay.textContent = coordinatesMap[district].place;
+    }
+}
+
+// Hardware Tasks 6 & 7: Device Streaming Video Feeds Trigger
+function startHardwareCamera(videoElementId) {
+    const videoNode = document.getElementById(videoElementId);
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: videoElementId === 'idScannerFeed' ? "environment" : "user" } })
+        .then(function(stream) {
+            videoNode.srcObject = stream;
+        })
+        .catch(function(error) {
+            alert("Camera device access denied or unavailable. Initializing offline visual simulation pattern instead.");
+            videoNode.poster = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=500";
+        });
+    } else {
+        alert("Media device API not supported by this container framework.");
+    }
+}
+
+function captureMockTelemetry(message) {
+    alert(`Hardware Capture Engine: ${message}`);
+}
+
+function handleVerificationSubmit(e) {
+    e.preventDefault();
+    const idNum = document.getElementById("voterIdNum").value;
+    const name = document.getElementById("voterFullName").value;
+    if(idNum.length !== 13) {
+        alert("Error: South African ID numbers must contain exactly 13 numeric positions.");
+        return;
+    }
+    alert(`Success: Identity profile verified for ${name}. Hardware checks cleared.`);
+}
+
+function handleBallotSubmission(e) {
+    e.preventDefault();
+    const selectedVote = document.querySelector('input[name="ballotVote"]:checked');
+    if(!selectedVote) {
+        alert("Please cast a selection on the ballot sequence row prior to execution.");
+        return;
+    }
+    alert(`Secure digital cryptographic selection for [${selectedVote.value}] has been committed to the election stream ledger!`);
+}
+
+// Graphical Metrics Distribution Presentation Layer
+function initVoteAnalyticsChart() {
+    const canvasElement = document.getElementById('voteChart');
+    new Chart(canvasElement, {
+        type: 'bar',
+        data: {
+            labels: ['ANC', 'DA', 'MK', 'EFF', 'FF+', 'ActionSA', 'IFP'],
+            datasets: [{
+                label: 'Audited Percentage Data Metrics (%)',
+                data: [39.2, 21.4, 14.8, 12.1, 5.2, 4.1, 3.2],
+                backgroundColor: ['#006600', '#00529B', '#1B4D3E', '#FF0000', '#FF6600', '#00B050', '#B19134'],
+                borderColor: '#111827',
+                borderWidth: 1.5
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true, max: 100 }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+}
+</script>
+</body>
+</html>
